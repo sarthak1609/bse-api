@@ -27,10 +27,8 @@ def fetch_stock_data():
         global all_stock_data, last_updated
         print("🔁 Fetching stock data...")
         try:
-            print('hello')
             stocks = bse.getScripCodes()
             for i, (code, name) in enumerate(stocks.items(), start=1):
-                print(stocks[500002])
                 try:
                     quote = bse.getQuote(code)
                     if 'currentValue' not in quote:
@@ -44,6 +42,7 @@ def fetch_stock_data():
                         'pChange': quote['pChange'],
                         'updatedAt': datetime.now().isoformat()
                     }
+                    print(all_stock_data[code])
                     if i % 100 == 0:
                         print(f"✅ Fetched {i} stocks so far...")
                 except Exception as e:
