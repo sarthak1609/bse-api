@@ -61,7 +61,7 @@ def fetch_stock_data():
             fetch_once()
         else:
             print("📴 Market closed — keeping old data.")
-        time.sleep(300)  # Wait 5 minutes
+        time.sleep(120)  # Wait 5 minutes
 
 # API Endpoints
 
