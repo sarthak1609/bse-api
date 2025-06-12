@@ -50,7 +50,7 @@ def fetch_stock_data():
                     if i % 100 == 0:
                         print(f"✅ Fetched {i} stocks so far...")
                 except Exception as e:
-                    print(f"❌ Error fetching {code}: {e}",flush=True)
+                    print(f"❌ Error fetching {code}: {e}")
             last_updated = datetime.now().isoformat()
             print(f"✅ Finished fetching {len(all_stock_data)} stocks.")
         except Exception as e:
