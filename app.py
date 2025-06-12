@@ -30,7 +30,7 @@ def fetch_stock_data():
             print('hello')
             stocks = bse.getScripCodes()
             for i, (code, name) in enumerate(stocks.items(), start=1):
-                print('hii')
+                print(stocks[500002])
                 try:
                     quote = bse.getQuote(code)
                     if 'currentValue' not in quote:
