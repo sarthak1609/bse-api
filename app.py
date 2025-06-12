@@ -35,7 +35,7 @@ def fetch_stock_data():
                 try:
                     quote = bse.getQuote(code)
                     if 'currentValue' not in quote:
-                        print('it is what it is')
+                        print(f"❗Missing currentValue for code {code} — full quote: {quote}")
                         continue
                     all_stock_data[code] = {
                         'code': code,
