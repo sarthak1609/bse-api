@@ -27,8 +27,10 @@ def fetch_stock_data():
         global all_stock_data, last_updated
         print("🔁 Fetching stock data...")
         try:
+            print('hello')
             stocks = bse.getScripCodes()
             for i, (code, name) in enumerate(stocks.items(), start=1):
+                print('hii')
                 try:
                     quote = bse.getQuote(code)
                     if 'currentValue' not in quote:
