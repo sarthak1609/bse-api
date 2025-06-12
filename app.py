@@ -3,6 +3,9 @@ from bsedata.bse import BSE
 from threading import Thread
 from datetime import datetime
 import time
+import sys
+print = lambda *args, **kwargs: __builtins__.print(*args, flush=True, **kwargs)
+
 
 app = Flask(__name__)
 bse = BSE(update_codes=True)
@@ -32,6 +35,7 @@ def fetch_stock_data():
                 try:
                     quote = bse.getQuote(code)
                     if 'currentValue' not in quote:
+                        print('it is what it is')
                         continue
                     all_stock_data[code] = {
                         'code': code,
@@ -42,7 +46,7 @@ def fetch_stock_data():
                         'pChange': quote['pChange'],
                         'updatedAt': datetime.now().isoformat()
                     }
-                    print(all_stock_data[code])
+                    print('yeah bitch')
                     if i % 100 == 0:
                         print(f"✅ Fetched {i} stocks so far...")
                 except Exception as e:
