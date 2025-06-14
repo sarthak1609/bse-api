@@ -4,12 +4,12 @@ from threading import Thread
 from datetime import datetime
 import time
 
-
 app = Flask(__name__)
 bse = BSE(update_codes=True)
 
 # Global in-memory storage
-all_stock_data = {}
+all_stock_data_list = []
+all_stock_data_dict = {}
 last_updated = None
 
 def is_market_open():
@@ -22,11 +22,15 @@ def is_market_open():
     )
 
 def fetch_stock_data():
-    global all_stock_data, last_updated
+    global all_stock_data_list, all_stock_data_dict, last_updated
 
     def fetch_once():
-        global all_stock_data, last_updated
+        global all_stock_data_list, all_stock_data_dict, last_updated
         print("🔁 Fetching stock data...")
+
+        all_stock_data_list = []
+        all_stock_data_dict = {}
+
         try:
             stocks = bse.getScripCodes()
             for i, (code, name) in enumerate(stocks.items(), start=1):
@@ -34,35 +38,42 @@ def fetch_stock_data():
                     quote = bse.getQuote(code)
                     if 'currentValue' not in quote:
                         continue
-                    all_stock_data[code] = {
+
+                    data = {
                         'code': code,
                         'name': name,
-                        'currentValue': quote['currentValue'],
+                        'lastPrice': quote['currentValue'],
                         'previousClose': quote['previousClose'],
                         'change': quote['change'],
                         'pChange': quote['pChange'],
                         'updatedAt': datetime.now().isoformat()
                     }
+
+                    all_stock_data_list.append(data)
+                    all_stock_data_dict[code] = data
+
                     if i % 100 == 0:
                         print(f"✅ Fetched {i} stocks so far...")
+
                 except Exception as e:
                     print(f"❌ Error fetching {code}: {e}")
+
             last_updated = datetime.now().isoformat()
-            print(f"✅ Finished fetching {len(all_stock_data)} stocks.")
+            print(f"✅ Finished fetching {len(all_stock_data_list)} stocks.")
         except Exception as e:
             print(f"⚠️ Initial fetch error: {e}")
 
-    # 🔹 Run one-time fetch immediately at startup
+    # Run one-time fetch immediately at startup
     fetch_once()
 
-    # 🔁 Loop to refresh data periodically when market is open
+    # Loop to refresh data periodically when market is open
     while True:
         if is_market_open():
             print("⏳ Market open — updating data...")
             fetch_once()
         else:
             print("📴 Market closed — keeping old data.")
-        time.sleep(120)  # Wait 5 minutes
+        time.sleep(300)  # Refresh every 5 minutes
 
 # API Endpoints
 
@@ -76,17 +87,17 @@ def home():
 
 @app.route('/all-stocks', methods=['GET'])
 def get_all_stocks():
-    if not all_stock_data:
+    if not all_stock_data_list:
         return jsonify({"message": "Data not yet available. Please wait."}), 503
     return jsonify({
         "lastUpdated": last_updated,
-        "totalStocks": len(all_stock_data),
-        "data": all_stock_data
+        "totalStocks": len(all_stock_data_list),
+        "data": all_stock_data_list
     })
 
 @app.route('/stock/<code>', methods=['GET'])
 def get_stock_by_code(code):
-    stock = all_stock_data.get(code)
+    stock = all_stock_data_dict.get(code)
     if stock:
         return jsonify(stock)
     return jsonify({"error": "Stock code not found"}), 404
@@ -95,6 +106,4 @@ def get_stock_by_code(code):
 if __name__ == '__main__':
     fetch_thread = Thread(target=fetch_stock_data, daemon=True)
     fetch_thread.start()
-
     app.run(host='0.0.0.0', port=5000)
-
